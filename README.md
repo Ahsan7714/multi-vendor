@@ -1,2 +1,0 @@
-# multi-vendor
-# updated
