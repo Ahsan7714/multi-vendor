@@ -4,13 +4,20 @@ const ErrorHandler = require("../utils/errorHandler");
 const User=require("../models/user")
 const Merchant=require("../models/merchant")
 const cloudinary=require("cloudinary")
+const Product=require("../models/product")
 // Create a new store
+
 exports.createStore = catchAsyncErrors(async (req, res, next) => {
   const { storeName, storeType, logo, banner, storeLocations } = req.body;
-  
+   
  const merchant=await Merchant.findOne({user:req.user._id})
  if(!merchant){
     return next(new ErrorHandler("Merchant Not Found", 404));
+
+ }
+ const storeExist=await Store.findOne({owner:merchant._id})
+ if(storeExist){
+  return next(new ErrorHandler("A Merchant Cannot Have Multiple Store", 404));
 
  }
 //  const cloudlogo=await cloudinary.v2.uploader(logo, {
@@ -59,12 +66,21 @@ exports.getStore = catchAsyncErrors(async (req, res, next) => {
 // Update a store
 exports.updateStore = catchAsyncErrors(async (req, res, next) => {
   const storeId = req.params.id;
-  const { storeName, storeType, logo, banner, storeLocations } = req.body;
 
+  const { storeName, storeType, logo, banner, storeLocations } = req.body;
+const merchant=await Merchant.findOne({user:req.user._id})
+if(!merchant){
+  return next(new ErrorHandler("Merchant not found", 404));
+
+}
   let store = await Store.findById(storeId);
 
   if (!store) {
     return next(new ErrorHandler("Store not found", 404));
+  }
+
+  if (merchant._id.toString() !== store.owner.toString()) {
+    return next(new ErrorHandler("Access denied", 404));
   }
   let newStoreData={
     storeName,
@@ -108,41 +124,50 @@ if(req.body.banner !==""){
     store,
   });
 });
-
 // Delete a store
 exports.deleteStore = catchAsyncErrors(async (req, res, next) => {
-  const storeId = req.params.id;
-
-  let store = await Store.findById(storeId);
-
-  if (!store) {
-    return next(new ErrorHandler("Store not found", 404));
-  }  
-  const user=await User.findById(req.user._id)
+    const storeId = req.params.id;
   
+    let store = await Store.findById(storeId);
+  
+    if (!store) {
+      return next(new ErrorHandler("Store not found", 404));
+    }
+  
+    const user = await User.findById(req.user._id);
+  
+    if (!req.body.password) {
+      return next(new ErrorHandler("Please enter your password", 400));
+    }
+  
+    const isPasswordMatched = await user.comparePassword(req.body.password, next);
+  
+    if (!isPasswordMatched) {
+      return next(new ErrorHandler("Invalid password", 401));
+    }
+  
+    const products = await Product.find({ store: store._id });
+  
+    // Delete all associated products and pictures
+    if (products) {
+      for (const product of products) {
+        for (const image of product.images) {
+          await cloudinary.v2.uploader.destroy(image.public_id);
+        }
+      }
+     
+      await Product.deleteMany({ store: store._id });
+    }
+  await cloudinary.v2.uploader.destroy(store.logo.public_id)
+  await cloudinary.v2.uploader.destroy(store.banner.public_id)
 
-  if (!req.body.password) {
-    return next(new ErrorHandler("Please enter your password", 400));
-  }
-
-  const isPasswordMatched = await user.comparePassword(
-    req.body.password,
-    next
-  );
-
-  if (!isPasswordMatched) {
-    return next(new ErrorHandler("Invalid password", 401));
-  }
-
-
-
-
-  await store.remove();
-
-  res.status(200).json({
-    success: true,
-    message: "Store deleted successfully",
+    // Delete the store
+    await Store.deleteOne({ _id: store._id });
+  
+    res.status(200).json({
+      success: true,
+      message: "Store and associated products deleted successfully",
+    });
   });
-});
-
+  
 

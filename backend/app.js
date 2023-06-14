@@ -11,10 +11,14 @@ const user=require("./routes/userRoutes")
 const merchant=require("./routes/merchantRoutes")
 const store=require("./routes/storeRoutes")
 const product=require("./routes/productRoutes")
-app.use("/api/v1/user",user)
-app.use("/api/v1/merchant",merchant)
-app.use("/api/v1/store",store)
-app.use("/api/v1/product",product)
+const offer=require("./routes/offerRoutes")
+
+app.use("/api/v1",user)
+app.use("/api/v1",merchant)
+app.use("/api/v1",store)
+app.use("/api/v1",product)
+app.use("/api/v1",offer)
+
 
 
 // Middleware for Errors

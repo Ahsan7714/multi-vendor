@@ -101,7 +101,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   let token;
 
   if (tokenExist) {
-    token = await Token.findByIdAndUpdate(user._id, { token: resetToken });
+    token = await Token.findByIdAndUpdate(tokenExist._id, { token: resetToken });
   } else {
     token = await Token.create({
       userId: user._id,
@@ -114,12 +114,69 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
     "host"
   )}/password/reset/${resetToken}`;
 
-  const message = `Your password reset token is:\n\n${resetPasswordUrl}\n\nIf you have not requested this email, please ignore it.`;
+  const message = `
+  <html>
+    <head>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 20px;
+        }
+        h1 {
+          color: #333;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        p {
+          color: #555;
+          font-size: 16px;
+          line-height: 1.5;
+          margin-bottom: 10px;
+        }
+        .button {
+          display: inline-block;
+          background-color: #3498db;
+          color: #ffff;
+          text-decoration: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Reset Your Password</h1>
+      <p>Hello,</p>
+      <p>
+        We received a request to reset your password. To proceed with the
+        password reset, please use the following token:
+      </p>
+      <p>
+        If you did not request a password reset, please disregard this email.
+        Your account is still secure.
+      </p>
+      <p>
+        Click the button below to reset your password. This token will expire
+        after 24 hours.
+      </p>
+      <a href="${resetPasswordUrl}" class="button">Reset Password</a>
+      <p>
+        If you have any questions or need further assistance, please contact
+        our support team.
+      </p>
+      <p>Best regards,</p>
+      <p>The Support Team</p>
+    </body>
+  </html>
+`;
+
 
   try {
     await sendEmail({
       email: user.email,
-      subject: `Ecommerce Password Recovery`,
+      subject: `Multi Vendor Password Recovery`,
       message,
     });
 
@@ -139,7 +196,7 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 const user=await User.findOne({email:req.body.email})
   const token = await Token.findOne({
-    token:req.body.token,
+    token:req.params.token,
     userId:user._id
   });
 
@@ -176,7 +233,7 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (req.body.newPassword !== req.body.confirmPassword) {
-    return next(new ErrorHandler("password does not match", 400));
+    return next(new ErrorHandler("Password does not match", 400));
   }
 
   user.password = req.body.newPassword;
@@ -186,4 +243,3 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   sendToken(user, 200, res);
 });
 
-//

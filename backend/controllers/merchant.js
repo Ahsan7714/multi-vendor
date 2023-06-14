@@ -1,9 +1,12 @@
 const catchAsyncErrors = require("../middelware/catchAsyncErrors");
 const Merchant = require("../models/merchant");
 const User = require("../models/user");
+const Product=require("../models/product")
 const ErrorHandler = require("../utils/errorhandler");
-const Store=require("../models/store")
-exports.createMerchant =catchAsyncErrors (async (req, res) => {
+const Store=require("../models/store");
+const user = require("../models/user");
+
+exports.createMerchant =catchAsyncErrors (async (req, res,next) => {
   
       const {
         firstname,
@@ -31,7 +34,11 @@ exports.createMerchant =catchAsyncErrors (async (req, res) => {
         yelpLink,
         pinterestLink,bussinessType
       } = req.body;
-  
+  const merchantExist=await Merchant.findOne({user:req.user._id})
+  if(merchantExist){
+    return next(new ErrorHandler("Only One Merhcant Can be Formed with Email ", 500));
+
+  }
       const merchant = await Merchant.create({
         user:req.user._id,
         firstname,
@@ -65,9 +72,9 @@ exports.createMerchant =catchAsyncErrors (async (req, res) => {
   
     
   });
-  
-  exports.getMerchant = async (req, res,next) => {
-    try {
+  // Merchant Want to See his Account
+  exports.getMerchantAccountForMerchant = catchAsyncErrors( async (req, res,next) => {
+
       const merchantAccount =await Merchant.findOne({user:req.user._id})
       if(!merchantAccount){
 
@@ -76,16 +83,23 @@ exports.createMerchant =catchAsyncErrors (async (req, res) => {
       const merchant = await Merchant.findById(merchantAccount._id);
       
       res.status(200).json({ merchant });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+  });
   
 
+// Customer want To see Merchant Account  
+exports.getMerchantForUser = catchAsyncErrors(async (req, res, next) => {
+  const id=req.params.merchantId
   
-  
-  exports.updateMerchant = async (req, res,next) => {
-    try {
+  const merchantAccount = await Merchant.findOne({_id:id}).select("-amount");
+  if (!merchantAccount) {
+    return next(new ErrorHandler("Merchant Not Found", 500));
+  }
+
+  res.status(200).json({ merchantAccount });
+});
+
+  exports.updateMerchant = catchAsyncErrors( async (req, res,next) => {
+    
       const merchantAccount =await Merchant.findOne({user:req.user._id})
       if (!merchantAccount) {
         return next(new ErrorHandler("Merchant Not Found", 500));
@@ -95,12 +109,11 @@ exports.createMerchant =catchAsyncErrors (async (req, res) => {
       const merchant = await Merchant.findByIdAndUpdate(merchantAccount._id, updateData, { new: true,runValidators:false });
       
       res.status(200).json({ message: "Merchant updated successfully", merchant });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+    
+    
+  });
   
-  //{Delete Merchant  By User }
+  //{Delete Merchant  By Merchant  }
   exports.deleteMerchant = catchAsyncErrors(async (req, res, next) => {
     const user = await User.findById(req.user._id);
   
@@ -126,7 +139,10 @@ exports.createMerchant =catchAsyncErrors (async (req, res) => {
     if (!isPasswordMatched) {
       return next(new ErrorHandler("Invalid password", 401));
     }
-  
+  const products=await Product.find({merchant:merchant._id})
+  if(products){
+    await Product.deleteMany({merchant:merchant._id})
+  }
     const store = await Store.findOne({ owner: merchant._id });
   
     if (store) {

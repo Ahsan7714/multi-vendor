@@ -25,7 +25,7 @@ const productSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
-    ratings:[
+    reviews:[
         {
             user:{
                 type:mongoose.Schema.Types.ObjectId,

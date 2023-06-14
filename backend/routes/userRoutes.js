@@ -6,9 +6,9 @@ const router=express.Router()
 router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 router.route("/logout").post(logout)
-router.route("/details").get(getUser)
+router.route("/account").get(getUser)
 router.route("/password/forgot").post(forgotPassword)
-router.route("/password/reset").post(resetPassword)
+router.route("/password/reset/:token").post(resetPassword)
 router.route("/password/update").put(isAuthenticatedUser,updatePassword)
 
 

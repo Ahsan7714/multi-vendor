@@ -6,6 +6,7 @@ const merchantSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
+  
   firstname:{
     type:String,
     required:true
@@ -13,6 +14,12 @@ const merchantSchema = new mongoose.Schema({
   lastname:{
     type:String,
     required:true
+  },
+  amount:{
+    type:String,
+    default:0,
+    required:true
+
   },
   hqAddress:{
     type:String,
