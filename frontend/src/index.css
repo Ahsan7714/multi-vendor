@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.MuiAutocomplete-hasPopupIcon.css-dtc7vm-MuiAutocomplete-root .MuiOutlinedInput-root, .MuiAutocomplete-hasClearIcon.css-dtc7vm-MuiAutocomplete-root .MuiOutlinedInput-root{
+  padding: 2px 0px; 
+}
