@@ -5,6 +5,7 @@ const Product=require("../models/product")
 const ErrorHandler = require("../utils/errorhandler");
 const Store=require("../models/store");
 const user = require("../models/user");
+const sendEmail = require("../utils/sendEmail");
 
 exports.createMerchant =catchAsyncErrors (async (req, res,next) => {
   
@@ -156,4 +157,90 @@ exports.getMerchantForUser = catchAsyncErrors(async (req, res, next) => {
   
 
 
- 
+  // withdraw payment 
+exports.requestPaymentWithdraw=catchAsyncErrors(async(req,res,next)=>{
+   const merchantId=req.store.owner
+   const amount=req.body.amount
+   if(!amount || amount==0){
+    return next(new ErrorHandler("Minimum Price Should Be More Than 0$", 401));
+   }
+
+   const paymentWithdrawUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/merchant/widthdraw/`;
+
+  const message = `
+  <html>
+    <head>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f4f4f4;
+          margin: 0;
+          padding: 20px;
+        }
+        h1 {
+          color: #333;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        p {
+          color: #555;
+          font-size: 16px;
+          line-height: 1.5;
+          margin-bottom: 10px;
+        }
+        .button {
+          display: inline-block;
+          background-color: #3498db;
+          color: #ffff;
+          text-decoration: none;
+          padding: 10px 20px;
+          border-radius: 4px;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Payment Withdraw </h1>
+      <p>Hello,</p>
+      <p>
+        We received a request to Withdraw your Payment. To proceed with the
+        payment  withdraw, please use the following Link:
+      </p>
+      <p>
+        If you did not request , please disregard this email.
+        Your account is still secure.
+      </p>
+      <p>
+        Click the button below to reset your password. This token will expire
+        after 24 hours.
+      </p>
+      <a href="${paymentWithdrawUrl}" class="button">Withdraw Your Payment </a>
+      <p>
+        If you have any questions or need further assistance, please contact
+        our support team.
+      </p>
+      <p>Best regards,</p>
+      <p>The Support Team</p>
+    </body>
+  </html>
+`;
+
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: `Multi Vendor Payment Withdraw`,
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${req.user.email} successfully`,
+    });
+  } catch (error) {
+    return next(new ErrorHandler(error.message, 500));
+  }
+    
+}) 
