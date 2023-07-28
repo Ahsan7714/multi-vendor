@@ -7,11 +7,15 @@ import Paper from '@mui/material/Paper';
 import axios from 'axios';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-
+import EmailIcon from '@mui/icons-material/Email';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import { useSelector } from 'react-redux';
+import { Badge } from '@mui/material';
 const Header = () => {
   const [products, setProducts] = useState([]);
   const [keyword, setKeyword] = useState("");
-
+const cartItems=useSelector(state=>state.Cart.items)
+const savedItems=useSelector(state=>state.Saved.items)
   async function getProducts() {
     try {
       const response = await axios.get("/products");
@@ -22,7 +26,6 @@ const Header = () => {
   }
 
   useEffect(() => {
-    getProducts();
   }, []);
 
   const searchProduct = async (e) => {
@@ -42,7 +45,7 @@ const Header = () => {
   }));
 
   return (
-    <div className='top-0 fixed w-full bg-slate-600 px-2 py-4 text-white flex flex-wrap justify-between items-center sm:flex-col sm:gap-6 md:flex-row'>
+    <div className='z-10 lg:sticky top-0  w-full bg-slate-600 px-2 py-4 text-white flex flex-wrap justify-between items-center  sm:flex-col sm:gap-6 md:flex-row  bg-deep-orange-600 rounded-b-sm shadow-2xl'>
       <h1 className='font-semibold text-2xl ml-4 tracking-wide w-full sm:w-auto'>ShopIt</h1>
       <div className='nav_links flex gap-5 ml-4 mt-4 md:mt-0'>
         <Link to='/' className='font-semibold tracking-wider text-1xl'>
@@ -96,14 +99,34 @@ const Header = () => {
             popupIcon=''
             clearIcon={null}
             PaperComponent={(props) => (
-              <Paper {...props} style={{ maxHeight: 200, overflow: 'auto', width: 258, border: "none", position: "relative", left: "-10px", top: "20px" }} />
+              <Paper {...props} style={{ maxHeight: 200, overflow: 'auto', width:window.innerWidth<=450?"400px" :"345px", border: "none", position: "relative", left: "-10px", top: "10px" }} />
             )}
           />
           <SearchIcon fontSize='medium' onClick={(e) => searchProduct(e)} />
         </form>
       </div>
-      <div className="flex gap-5 mr-5 mt-3  ">
-        <ShoppingCartIcon className='cursor-pointer ' fontSize='medium' />
+      <div className="flex gap-5 mr-5 mt-3 items-center ">
+        {
+          cartItems.length>0?<>
+          <Badge  badgeContent={cartItems.length} color="primary">
+          <ShoppingCartIcon className='cursor-pointer ' fontSize='medium' />
+</Badge>
+          </>: <ShoppingCartIcon className='cursor-pointer ' fontSize='medium' />
+        }
+        {
+          savedItems.length>0?<>
+          <Badge  badgeContent={savedItems.length} color="primary">
+          <FavoriteIcon className='cursor-pointer ' fontSize='medium' />
+</Badge>
+          </>: <FavoriteIcon className='cursor-pointer ' fontSize='medium' />
+        }
+        
+
+
+        <EmailIcon className='cursor-pointer ' fontSize='medium' />
+
+
+
         <AccountCircleIcon className='cursor-pointer ' fontSize='medium' />
       </div>
     </div>

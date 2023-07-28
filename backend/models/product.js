@@ -13,6 +13,10 @@ const productSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
+    isFeatured:{
+        type:Boolean,
+        default:false
+    },
     category:{
         type:String,
         required:true
@@ -79,6 +83,11 @@ const productSchema=new mongoose.Schema({
       createdAt: {
         type: Date,
         default: Date.now,
+      },
+      deliveryCharges:{
+        type:Number,
+        require:true,
+        default:0
       }
 
 })

@@ -7,7 +7,7 @@ const ErrorHandler = require("../utils/errorHandler");
 
 // Get All products
 exports.getAllProducts = catchAsyncErrors(async (req, res, nest) => {
-    const resultPerPage = 8;
+    const resultPerPage = 9;
   
     const apiFeature = new ApiFeatures(Product.find(), req.query)
       .search()
@@ -28,6 +28,11 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, nest) => {
     });
   });
   
+  // Get All Featured Products
+  exports.getAllFeaturedProducts=catchAsyncErrors(async(req,res,next)=>{
+    const products=await Product.find({isFeatured:true})
+    res.status(200).json({products})
+  })
   
 // Get All products of a Store 
 exports.getAllProductsOfStore=catchAsyncErrors(async(req,res,next)=>{

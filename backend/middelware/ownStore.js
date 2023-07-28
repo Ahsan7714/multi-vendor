@@ -16,7 +16,7 @@ exports.checkOwnStore = catchAsyncErrors(async (req, res, next) => {
   }
   const store = await Store.findOne({ owner: merchant._id.toString() });
   if (!store) {
-    return next(new ErrorHandler('Access denied. this store not belongs to you .', 403));
+    return next(new ErrorHandler('Access denied. this store not belongs to you . You have to create your Store to create Product .', 403));
   }
   
   if (store.owner.toString() !== merchant._id.toString()) {

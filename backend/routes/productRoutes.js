@@ -1,10 +1,12 @@
 const express=require("express")
 const { isAuthenticatedUser, authorizeRoles } = require("../middelware/auth")
-const { createProduct, getProduct, updateProduct, deleteProduct,getAllProducts,getAllProductsOfStore,postReview,deleteReview, getProductReviews, deleteOwnReview } = require("../controllers/product")
+const { createProduct, getProduct, updateProduct, deleteProduct,getAllFeaturedProducts,getAllProducts,getAllProductsOfStore,postReview,deleteReview, getProductReviews, deleteOwnReview } = require("../controllers/product")
 const { checkOwnStore } = require("../middelware/ownStore")
 const router=express.Router()
 // all products of site
 router.route("/products").get(getAllProducts)
+// all featured products of site
+router.route("/products/featured").get(getAllFeaturedProducts)
 // all products of a store
 router.route("/products/:storeId").get(getAllProductsOfStore)
 // create a product {merchant}
